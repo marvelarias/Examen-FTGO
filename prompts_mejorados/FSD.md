@@ -1,6 +1,6 @@
 # B.2 — Prompt mejorado: FSD ligero de FTGO
 
-**Versión:** v0.4-improved · **Huecos TODO:** 4/4 · **Sección D4:** Examples · **Métrica:** CF (antes/después).
+**Versión:** v0.5-improved (tuning corrida 2) · **Huecos TODO:** 4/4 · **D4:** Examples · **Métrica:** CF ampliado.
 
 ---
 
@@ -12,9 +12,10 @@
 | **Artefacto destino** | FSD |
 | **Modelo recomendado** | Sonnet |
 | **Temperatura** | 0.2 |
-| **Versión** | v0.4-improved |
+| **Versión** | v0.5-improved |
 | **Brief canónico** | `docs/Brief.md` (§A.5 user stories) |
-| **Entrada previa** | PRD generado (`docs/PRD.md` o salida del prompt B.1) |
+| **Entrada previa** | `docs/PRD.md` **v1.1+** (tabla capacidad→US en §5) |
+| **Última corrida** | FSD v1.0 — CF 100 % (ver Métrica → corrida 1) |
 
 ---
 
@@ -63,18 +64,45 @@ A partir del **PRD** ya generado y de las **3 user stories semilla** del brief (
 
 **US-03:** disponibilidad del courier, ofertas cercanas, aceptar/rechazar en **30 s**, ruta optimizada al aceptar.
 
+### Alineación PRD v1.1 (capacidad → US)
+
+Usa la tabla **Trazabilidad capacidad → user story** del [PRD §5](docs/PRD.md). Cada UC debe citar **capacidad PRD (§3.x)** y **US** cuando aplique.
+
+| UC | US | Capacidad PRD (§) |
+| :--- | :--- | :--- |
+| UC-01 | US-01 | 3.3 Order Taking |
+| UC-02 | US-02 | 3.4 Order Fulfillment / Kitchen |
+| UC-03 | US-03 | 3.5 Delivery |
+| UC-04 | Derivado §A.5 | 3.3 + 3.6 |
+| UC-05 | Derivado §A.5 | 3.5 + 3.7 |
+
+---
+
+## Ajustes tras corrida 1 (objetivo corrida 2)
+
+[`docs/FSD.md`](../docs/FSD.md) v1.0 alcanzó **CF 100 %** con prompt v0.4. Para **corrida 2** (prompt v0.5):
+
+| Gap corrida 1 | Acción v0.5 |
+| :--- | :--- |
+| PRD v1.0 sin tabla US centralizada | Entrada obligatoria: **PRD v1.1+**; intro cita tabla §5 del PRD |
+| Sin **checklist de verificación** en el FSD | Bloque **Verificación F1–F8** obligatorio al final |
+| Esqueleto solo detalla UC-01/02 | Exigir **UC-03…05 completos** (no «…» ni TBD) |
+| Sin **diagrama de flujo** entre UCs | `flowchart` Mermaid UC-01→04→02→03→05 |
+| Sin **métricas en el artefacto** | Sección **## Métrica de calidad — corrida N** en el output |
+| Criterios §A.5 no explícitos por UC | Tabla **criterio brief cubierto** por UC (F9) |
+
 ---
 
 ## Reasoning
 
 Sigue estos pasos en orden:
 
-1. Usa el **catálogo UC-01…UC-05** del Context; no improvises IDs ni títulos.
-2. Cubre las **3 US semilla** con UC-01, UC-02 y UC-03.
-3. Documenta **UC-04 y UC-05** como derivados explícitos del brief (§A.5).
-4. Aplica la **regla de granularidad** (TODO 2) al redactar flujos alternativos.
-5. Completa los **7 campos** por UC según el esqueleto del Output.
-6. Mapea cada UC a **una capacidad PRD** (columna del catálogo).
+1. Lee **PRD v1.1+** (tabla capacidad→US) y el catálogo **UC-01…UC-05**; no improvises IDs.
+2. Cubre US-01…03 y derivados UC-04/05 con los **7 campos completos** cada uno.
+3. Aplica **regla de granularidad**; cada **FA** con ID (FA-01, FA-02…).
+4. Incluye **diagrama de flujo** de UCs y tabla **criterios §A.5 cubiertos**.
+5. Ejecuta checklist **F1–F8** y sección **Métrica** (si es corrida de laboratorio).
+6. **NO** incluyas razonamiento fuera de verificación/métrica.
 
 ### Regla de granularidad (TODO 2 — completado)
 
@@ -100,6 +128,9 @@ Detente cuando se cumplan **todas** las condiciones:
   - Cada UC incluye los **7 campos** del esqueleto (ningún campo vacío o «TBD»).
   - **100 %** de los UCs con origen trazable (`US-NN`, `[Brief §A.5]`, o capítulo del libro citado).
   - Longitud total **≤ 2 500 palabras** (FSD ligero).
+  - **Diagrama Mermaid** de flujo entre UC-01…05.
+  - Bloque **Verificación F1–F8** y, en corridas evaluadas, **Métrica de calidad** con CF calculado.
+  - **100 %** criterios §A.5 de la US vinculada reflejados en flujos o FA (métrica F9).
 
 No continues produciendo contenido más allá de estas condiciones.
 
@@ -111,11 +142,38 @@ No continues produciendo contenido más allá de estas condiciones.
 
 ### Estructura del FSD
 
-1. **Introducción** (1 párrafo): propósito, alcance y relación con el PRD.
-2. **Tabla de UCs** (ID, título, actor primario, capacidad PRD, origen).
-3. **Detalle de cada UC** con el esqueleto siguiente.
+1. **Metadatos** (versión, fecha, PRD de entrada, prompt).
+2. **Introducción** (1 párrafo): PRD v1.1+ y brief §A.5.
+3. **Diagrama de flujo** de UCs (Mermaid).
+4. **Tabla de UCs** (5 filas, columnas del catálogo).
+5. **Detalle UC-01…UC-05** (7 campos + GWT cada uno).
+6. **Tabla criterios §A.5 cubiertos** por UC.
+7. **Verificación F1–F8** (obligatoria).
+8. **Métrica de calidad — corrida N** (obligatoria en evaluación del laboratorio).
 
-### Esqueleto formal por UC (TODO 4 — completado)
+### Formato obligatorio del encabezado (corrida 2+)
+
+```markdown
+# FSD — FTGO (Food To Go)
+
+| Campo | Valor |
+| **Versión** | 1.x |
+| **Fecha** | YYYY-MM-DD |
+| **Entrada** | [PRD v1.1](PRD.md) · [Brief §A.5](Brief.md) |
+| **Prompt** | PR-FSD-FTGO-001 v0.5 |
+```
+
+### Diagrama de flujo (obligatorio)
+
+```mermaid
+flowchart LR
+    UC01[UC-01 Tomar pedido] --> UC04[UC-04 Pago]
+    UC04 --> UC02[UC-02 Ticket cocina]
+    UC02 --> UC03[UC-03 Asignar courier]
+    UC03 --> UC05[UC-05 Tracking]
+```
+
+### Esqueleto formal por UC (TODO 4 — v0.5)
 
 ```markdown
 ### UC-01: Tomar pedido
@@ -169,7 +227,52 @@ No continues produciendo contenido más allá de estas condiciones.
 - **When:** el Restaurante acepta el ticket e indica el tiempo estimado de preparación.
 - **Then:** el estado del pedido se actualiza y el Consumidor es notificado.
 
-(Repetir estructura para UC-03…UC-05; UC-04 debe incluir tolerancia a pasarela caída si aplica [Brief §A.4].)
+### UC-03: Asignar pedido a courier
+
+Completar 7 campos; **When/Then** deben mencionar timeout **30 s** y ruta optimizada ([Brief §A.5 US-03]).
+
+### UC-04: Procesar pago en checkout
+
+Incluir **FA-01 pasarela caída** alineado a [PRD NFR-04] / [Brief §A.4].
+
+### UC-05: Consultar tracking en tiempo real
+
+Vincular [PRD NFR-02] latencia; **FA-01** degradación tracking [NFR-03].
+```
+
+---
+
+## Anti-patterns (evitar en corrida 2)
+
+| Anti-pattern | Impacto | Corrección |
+| :--- | :--- | :--- |
+| UC-03…05 con «…» o TBD | Baja **F3** | Redactar 7 campos completos |
+| Omitir timeout **30 s** en UC-03 | Baja **F9** | Citar criterio US-03 en flujo o GWT |
+| Sin FA en UC-02 rechazo | Baja **F9** | FA-01 rechazo con motivo y cancelación |
+| PRD v1.0 ignorado | Desalineación | Usar tabla §5 PRD v1.1 |
+| UC inventado (UC-99) | `E_INVENTED_UC` | Solo catálogo UC-01…05 |
+| GWT de una sola línea vacía | `E_MISSING_GWT` | Tres cláusulas Given/When/Then |
+
+---
+
+## Verification (FSD)
+
+| # | Verificación | Criterio |
+| :---: | :--- | :--- |
+| F1 | Estructura | Metadatos + intro + diagrama + tabla + 5 UCs + verificación |
+| F2 | Catálogo | UC-01…05 presentes con títulos del Context |
+| F3 | 7 campos / UC | 35/35 campos sin TBD |
+| F4 | GWT | 5/5 UCs con Given+When+Then |
+| F5 | Tabla resumen | 5 filas ✅ |
+| F6 | Trazabilidad | 100 % con US o [Brief §A.5] |
+| F7 | Palabras | ≤ 2 500 |
+| F8 | UCs inventados | 0 |
+| F9 | Criterios §A.5 | Tabla: cada UC lista ítems del brief cubiertos |
+
+**Salida obligatoria:**
+
+```text
+Verificación FSD: F1–F9 → [N/9] ✅ | Pendientes: [lista]
 ```
 
 ---
@@ -192,6 +295,9 @@ No continues produciendo contenido más allá de estas condiciones.
 | `E_MISSING_GWT` | Hay UCs sin Given/When/Then → reintentar. |
 | `E_INVENTED_UC` | UC no rastreable al PRD/brief/libro → rechazar. |
 | `E_STOP_NOT_MET` | Faltan campos del esqueleto o tabla incompleta → reintentar. |
+| `E_MISSING_FLOW` | Sin diagrama Mermaid de UCs → reintentar. |
+| `E_WEAK_US03` | UC-03 sin timeout 30 s → reintentar. |
+| `E_PRD_VERSION` | PRD anterior a v1.1 sin tabla capacidad→US → usar PRD actualizado. |
 
 ---
 
@@ -289,6 +395,19 @@ Historial de evolución del prompt **PR-FSD-FTGO-001**. Cada entrada documenta *
 | :--- | :--- |
 | **Métrica de calidad** con CF, registro 6 corridas y Δ | Mide cobertura UC-01…05 y GWT vs semilla; evidencia de menos reintentos. |
 
+### v0.5-improved — tuning corrida 2 (2026-05-22)
+
+| Qué | Por qué |
+| :--- | :--- |
+| Sección **Ajustes tras corrida 1** | Conecta CF 100 % de v1.0 con mejoras medibles (F9, diagrama, PRD v1.1). |
+| Entrada **PRD v1.1+** y tabla capacidad→US | Alinea FSD con PRD corrida 2; evita drift entre artefactos. |
+| **Verificación F1–F9** obligatoria | Sube reproducibilidad; F9 = cobertura criterios §A.5 por UC. |
+| **Diagrama Mermaid** de flujo UC | Mejora V8 downstream y lectura del orden pedido→pago→cocina→entrega. |
+| Esqueleto **UC-03…05** explícito + **Anti-patterns** | Corrida 1 tenía CF 100 % pero UC-03…05 menos guiados en el prompt. |
+| **Métrica en artefacto FSD** | Paridad con PRD v1.1; evidencia de corrida en el documento generado. |
+| Failure modes `E_MISSING_FLOW`, `E_WEAK_US03`, `E_PRD_VERSION` | Detección automática de regresiones típicas. |
+| **CF v0.5** incluye componente F9 (10 %) | Incentiva cumplir criterios de aceptación del brief por UC. |
+
 ---
 
 ## Métrica de calidad (antes / después)
@@ -299,8 +418,8 @@ Historial de evolución del prompt **PR-FSD-FTGO-001**. Cada entrada documenta *
 
 | Métrica | Definición | Meta (mejorado) |
 | :--- | :--- | :---: |
-| **Cobertura funcional (CF)** | `(UCs catálogo UC-01…05 documentados / 5) × 35% + (% UCs con 7 campos completos) × 25% + (% UCs con GWT Given+When+Then) × 25% + (% UCs con origen trazable) × 15%` | **≥ 90 %** |
-| **Iteraciones hasta aceptar** | Reintentos hasta ≥ 5 UCs sin `E_INSUFFICIENT_UCS` ni `E_MISSING_GWT` | **≤ 2** (media) |
+| **Cobertura funcional (CF)** | `(F2/5)×30% + (F3%)×25% + (F4%)×25% + (F6%)×10% + (F9%)×10%` — F9 = % ítems §A.5 cubiertos en tabla criterios | **≥ 90 %** |
+| **Iteraciones hasta aceptar** | Reintentos hasta cumplir stop sin `E_*` | **≤ 2**; meta corrida 2: **1** |
 
 ### Indicadores secundarios
 
@@ -314,6 +433,9 @@ Historial de evolución del prompt **PR-FSD-FTGO-001**. Cada entrada documenta *
 | F6 | Trazabilidad origen | % UCs con US-NN o [Brief §A.5] |
 | F7 | Palabras | ≤ 2 500 ✅ / ❌ |
 | F8 | UC inventado (E_INVENTED_UC) | 0 = ✅ |
+| F9 | Criterios §A.5 cubiertos (tabla) | % ítems del brief reflejados (meta ≥ 95 %) |
+| F10 | Diagrama flujo UC | ✅ / ❌ |
+| F11 | Verificación F1–F9 en output | 0–9 ítems ✅ |
 
 ### Registro — Antes (prompt semilla v0.1)
 
@@ -323,29 +445,37 @@ Historial de evolución del prompt **PR-FSD-FTGO-001**. Cada entrada documenta *
 | 2 | | | | | | | | | | | | | |
 | 3 | | | | | | | | | | | | | |
 
-### Registro — Después (prompt mejorado v0.4)
+### Registro — Después (prompt mejorado v0.5)
 
-| Corrida | Fecha | Modelo | F1 | F2 | F3 (%) | F4 (%) | F5 | F6 (%) | F7 | F8 | **CF (%)** | Iteraciones | Evidencia |
-| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | 2026-05-22 | Composer (Cursor) | 5 | 5 | 100 | 100 | ✅ | 100 | 1 302 | 0 | **100** | 1 | [`docs/FSD.md`](../docs/FSD.md) v1.0 |
-| 2 | | | | | | | | | | | | | |
-| 3 | | | | | | | | | | | | | |
+| Corrida | Prompt | Fecha | Modelo | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10 | F11 | **CF** | Iter. | Evidencia |
+| :---: | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| 1 | v0.4 | 2026-05-22 | Composer | 5 | 100 | 100 | ✅ | 100 | 1 302 | 0 | — | ❌ | 0/8 | **100*** | 1 | [`docs/FSD.md`](../docs/FSD.md) v1.0 |
+| 2 | v0.5 | 2026-05-22 | Composer | 5 | 100 | 100 | ✅ | 100 | 1 689 | 0 | 100 | ✅ | 9/9 | **100** | 1 | [`docs/FSD.md`](../docs/FSD.md) v1.1 |
+| 3 | v0.5 | | | | | | | | | | | | | | | |
+
+\* CF v0.4 sin F9/F10/F11.
 
 ### Resumen comparativo
 
 | Indicador | Antes (media) | Después (media) | Δ |
 | :--- | :---: | :---: | :---: |
-| CF (%) | — | **100** *(solo corrida 1)* | — |
-| Iteraciones | — | **1** *(solo corrida 1)* | — |
-| F2 — UCs catálogo / 5 | — | **5** | — |
-| F3 — Campos completos (%) | — | **100** | — |
-| F4 — GWT completos (%) | — | **100** | — |
-| F8 — UCs inventados (0 = bueno) | — | **0** | — |
+| CF (%) | — | **100** *(media c1–c2)* | — |
+| Iteraciones | — | **1** | — |
+| F9 — Criterios §A.5 | — | **100** *(c2)* | +100 % |
+| F10 — Diagrama flujo | — | **✅** *(c2)* | +1 |
+| F11 — Verificación F | — | **9/9** *(c2)* | +9 |
 
-> **Nota corrida 1 (después):** CF = 35 % (5/5 UCs catálogo) + 25 % (35/35 campos) + 25 % (5/5 GWT) + 15 % (trazabilidad) = **100 %**. F7 ≤ 2 500 palabras. Sin `E_INVENTED_UC`.
+> **Corrida 2 (v0.5):** CF = 30+25+25+10+10 = **100 %**. Mejoras vs v1.0: **F9** 17/17 criterios §A.5, **F10** diagrama, **F11** 9/9, entrada **PRD v1.1**. Ver *Métrica de calidad — corrida 2* en `docs/FSD.md` v1.1.
 
-**Interpretación esperada:** tras mejorar el prompt, **F2** y **F4** suben (catálogo UC-01…05 + Examples); bajan iteraciones y apariciones de **F8**.
+**Interpretación v0.5:** mantiene CF ≥ 90 %; mejora trazabilidad al PRD y cumplimiento explícito de criterios §A.5.
 
 ---
 
-**Comando sugerido:** adjuntar `docs/Brief.md`, PRD generado y este prompt; temperatura **0.2**; pedir solo el FSD.
+**Comando sugerido (corrida 2, prompt v0.5):**
+
+```text
+Aplica PR-FSD-FTGO-001 v0.5. Adjuntos: docs/Brief.md, docs/PRD.md v1.1, este prompt.
+Genera docs/FSD.md v1.1: UC-01…05 completos, diagrama Mermaid, tabla criterios §A.5,
+Verificación F1–F9 y sección Métrica de calidad — corrida 2.
+Sin razonamiento previo. Temperatura 0.2.
+```
