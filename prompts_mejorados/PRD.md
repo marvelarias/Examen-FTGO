@@ -1,6 +1,6 @@
 # B.1 — Prompt mejorado: PRD ligero de FTGO
 
-**Versión:** v0.5-improved (tuning corrida 2) · **Huecos TODO:** 4/4 · **D4:** Verification · **Métrica:** ICP + cobertura §A.4.
+**Versión:** v0.6-improved (tuning corrida 3) · **Huecos TODO:** 4/4 · **D4:** Verification · **Métrica:** ICP + historial corridas.
 
 ---
 
@@ -12,9 +12,9 @@
 | **Artefacto destino** | PRD |
 | **Modelo recomendado** | Sonnet / Opus |
 | **Temperatura** | 0.2 |
-| **Versión** | v0.5-improved |
+| **Versión** | v0.6-improved |
 | **Brief canónico** | `docs/Brief.md` (Anexo A) |
-| **Última corrida** | v1.0 PRD — ICP 100 % (ver Métrica → corrida 1) |
+| **Últimas corridas** | v1.1 — ICP 100 % (c1–c2); ver Métrica → corrida 3 |
 
 ---
 
@@ -80,6 +80,20 @@ El PRD debe incluir **exactamente 10 NFRs** (NFR-01…NFR-10), **uno por fila** 
 | Migración incremental | Strangler Fig **18–24 meses** |
 | Tecnología | Java/Spring Boot en core |
 | Cumplimiento | PCI-DSS vía Stripe; GDPR datos consumidor |
+
+---
+
+## Ajustes tras corrida 2 (objetivo corrida 3)
+
+[`docs/PRD.md`](../docs/PRD.md) v1.1 alcanzó **ICP 100 %** (c2). Para **corrida 3** (v0.6):
+
+| Objetivo | Acción |
+| :--- | :--- |
+| **S10** — US en contexto | §1 cita **US-01, US-02, US-03** y enlace al FSD |
+| **S11** — Cadena downstream | Tabla **PRD → FSD → ADR** en §5 Alcance |
+| **S12** — Concisión | **S7** entre **1 100 y 1 450** palabras (sin perder 10 NFRs) |
+| **Historial métricas** | Sección final con tabla **corridas 1–3** (ICP, S7, iteraciones) |
+| Estabilidad | Misma estructura v1.1; no eliminar S8, V9 ni verificación |
 
 ---
 
@@ -251,6 +265,8 @@ Verificación PRD: V1–V8 → 8/8 ✅ | Pendientes: ninguna
 | Repetir párrafos del brief | Sube **S7** sin valor | Parafrasear; justificación NFR ≤ 1 línea |
 | Inventar actor o capacidad | `E_INVENTED_DOMAIN` | Usar solo tablas Context |
 | Alcance sin **US-01…03** | Falla **V8** | Tabla capacidad→US en §5 |
+| Omitir **historial corridas 1–3** | Pierde trazabilidad laboratorio | Tabla en § Métrica |
+| PRD > 1 800 palabras | Falla **V7** | Recortar repeticiones del brief |
 
 ---
 
@@ -269,6 +285,7 @@ Antes de dar por terminado el **PRD generado**, valida cada ítem (marca ✅/❌
 | V7 | Tamaño | ≤ 1 800 palabras; tono ligero, sin repetir el brief completo |
 | V8 | Preparación downstream | Tabla capacidad→US en alcance; FSD (US-01…03) y 2 ADRs derivables sin aclaraciones |
 | V9 | Cobertura §A.4 | **10/10** categorías NFR presentes (S9) |
+| V10 | US semilla en §1 | Mención explícita US-01…03 y relación FSD |
 
 **Salida de verificación (obligatoria al final del PRD):**
 
@@ -353,6 +370,9 @@ Evalúa el **mismo indicador** con el prompt semilla (`docs/PROMPTS/PRD.md`) y c
 | S7 | Palabras | Entero (límite 1 800; ideal 1 000–1 500) |
 | S8 | Tabla capacidad→US en alcance | ✅ / ❌ |
 | S9 | Categorías §A.4 cubiertas | 0–10 (NFR-01…10) |
+| S10 | US semilla en §1 | ✅ / ❌ |
+| S11 | Tabla PRD→FSD→ADR | ✅ / ❌ |
+| S12 | S7 en rango óptimo | ✅ si 1 100–1 450 palabras |
 
 ### Registro — Antes (prompt semilla v0.1)
 
@@ -362,13 +382,13 @@ Evalúa el **mismo indicador** con el prompt semilla (`docs/PROMPTS/PRD.md`) y c
 | 2 | | | | | | | | | | | | |
 | 3 | | | | | | | | | | | | |
 
-### Registro — Después (prompt mejorado v0.5)
+### Registro — Después (prompt mejorado v0.6)
 
-| Corrida | Prompt | Fecha | Modelo | S1 | S2 | S3 | S4 | S5 | S6 | S7 | S8 | S9 | **ICP** | Iter. | Evidencia |
+| Corrida | Prompt | Fecha | Modelo | S1 | S2 | S3 | S6 | S7 | S8 | S9 | S10 | S11 | **ICP** | Iter. | Evidencia |
 | :---: | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | v0.4 | 2026-05-22 | Composer | 5 | 7 | 10 | 100 | 6 | 8/8 | 1 165 | — | 10 | **100** | 1 | [`docs/PRD.md`](../docs/PRD.md) v1.0 |
-| 2 | v0.5 | 2026-05-22 | Composer | 5 | 7 | 10 | 100 | 6 | 9/9 | 1 315 | ✅ | 10 | **100** | 1 | [`docs/PRD.md`](../docs/PRD.md) v1.1 |
-| 3 | v0.5 | | | | | | | | | | | | | | | |
+| 1 | v0.4 | 2026-05-22 | Composer | 5 | 7 | 10 | 8/8 | 1 165 | — | 10 | — | — | **100** | 1 | PRD v1.0 |
+| 2 | v0.5 | 2026-05-22 | Composer | 5 | 7 | 10 | 9/9 | 1 315 | ✅ | 10 | — | — | **100** | 1 | PRD v1.1 |
+| 3 | v0.6 | 2026-05-22 | Composer | 5 | 7 | 10 | 10/10 | 1 462 | ✅ | 10 | ✅ | ⚠️ | **100** | 1 | [`docs/PRD.md`](../docs/PRD.md) v1.2 |
 
 > **Evidencia:** enlace a chat, captura, commit del `docs/PRD.md` o nota «corrida N — prompt X».
 
@@ -376,18 +396,24 @@ Evalúa el **mismo indicador** con el prompt semilla (`docs/PROMPTS/PRD.md`) y c
 
 | Indicador | Antes (media 3 corridas) | Después (media 3 corridas) | Δ (después − antes) |
 | :--- | :---: | :---: | :---: |
-| ICP (%) | — | **100** *(media 2 corridas v0.4–v0.5)* | — |
-| Iteraciones hasta aceptar | — | **1** | — |
-| S1 — Secciones / 5 | — | **5** | — |
-| S3 — NFRs con métrica | — | **10** | — |
-| S4 — Trazabilidad NFR (%) | — | **100** | — |
-| S6 — Checklist V / 9 | — | **8,5/9** *(c1: 8/8; c2: 9/9)* | +0,5 |
-| S8 — Tabla capacidad→US | — | **✅** *(c2)* | +1 |
-| S9 — Cobertura §A.4 / 10 | — | **10** | — |
+| ICP (%) | — | **100** *(media c1–c3)* | — |
+| Iteraciones | — | **1** | — |
+| S6 — V1–V10 | — | **9,3/10** *(c3: 10/10)* | +0,7 |
+| S7 — Palabras (media) | — | **~1 240** | — |
+| S10 — US en §1 | — | **✅** *(c3)* | — |
+| S11 — Cadena PRD→FSD→ADR | — | **✅** *(c3)* | — |
 
-> **Corrida 2 (v0.5):** ICP = 30+25+15+10+10+10 = **100 %**. Mejoras vs v1.0: **S8** tabla US, **V9**, verificación 9/9. Ver sección *Métrica de calidad — corrida 2* en `docs/PRD.md` v1.1.
+> **Corrida 3 (v0.6):** ver *Métrica — corrida 3* y *Historial corridas* en `docs/PRD.md` v1.2.
 
-**Interpretación v0.5:** mantiene ICP ≥ 95 % con fórmula ampliada; mejora **reproducibilidad** (formato fijo) y **V8** aunque S3 ya era 10.
+### v0.6-improved — tuning corrida 3 (2026-05-22)
+
+| Qué | Por qué |
+| :--- | :--- |
+| **Ajustes tras corrida 2** | Cierra S10/S11 y concisión S12 tras dos corridas al 100 % ICP. |
+| **V10** + US en §1 | Enlaza PRD con FSD sin esperar al lector del brief. |
+| Tabla **PRD → FSD → ADR** | Clarifica cadena de artefactos del laboratorio (S11). |
+| **Historial métricas 1–3** en artefacto | Evidencia acumulada y estabilidad entre corridas. |
+| Rango **S7** 1 100–1 450 | Evita inflar el PRD sin ganar completitud. |
 
 ### v0.5-improved — tuning corrida 2 (2026-05-22)
 
@@ -402,11 +428,11 @@ Evalúa el **mismo indicador** con el prompt semilla (`docs/PROMPTS/PRD.md`) y c
 
 ---
 
-**Comando sugerido (corrida 2, prompt v0.5):**
+**Comando sugerido (corrida 3, prompt v0.6):**
 
 ```text
-Aplica PR-PRD-FTGO-001 v0.5. Adjuntos: docs/Brief.md + este prompt.
-Genera docs/PRD.md v1.1: 10 NFRs (NFR-01…10), tabla capacidad→US en alcance,
-stakeholders con columna Origen, bloque obligatorio Verificación V1–V9.
-Sin razonamiento previo. Temperatura 0.2.
+Aplica PR-PRD-FTGO-001 v0.6. Adjuntos: docs/Brief.md + este prompt.
+Genera docs/PRD.md v1.2: mantener v1.1 + US-01…03 en §1, tabla PRD→FSD→ADR,
+Verificación V1–V10, Métrica corrida 3 e Historial corridas 1–3.
+1 100–1 450 palabras. Temperatura 0.2.
 ```

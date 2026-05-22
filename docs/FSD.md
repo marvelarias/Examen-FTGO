@@ -2,18 +2,18 @@
 
 | Campo | Valor |
 | :--- | :--- |
-| **Versión** | 1.1 |
+| **Versión** | 1.2 |
 | **Fecha** | 2026-05-22 |
-| **Entrada** | [PRD v1.1](PRD.md) · [Brief §A.5](Brief.md) |
-| **Referencia previa** | FSD v1.0 (corrida 1, prompt v0.4) |
-| **Prompt** | PR-FSD-FTGO-001 v0.5 |
+| **Entrada** | [PRD v1.2](PRD.md) · [Brief §A.5](Brief.md) |
+| **Referencia previa** | FSD v1.1 (corrida 2, prompt v0.5) |
+| **Prompt** | PR-FSD-FTGO-001 v0.6 |
 | **Estado** | Borrador para ADRs y validación BDD |
 
 ---
 
 ## Introducción
 
-Este **FSD ligero** formaliza el flujo de pedido FTGO alineado al [PRD v1.1](PRD.md) (tabla **capacidad → US** en §5) y al brief **§A.5**. Cubre **UC-01…UC-05**: toma de pedido, pago, ticket en cocina, asignación al courier y tracking. Fuera de alcance: back office, gestión de menús y UC-06/07 opcionales.
+Este **FSD ligero** formaliza el flujo de pedido FTGO alineado al [PRD v1.2](PRD.md) (capacidades §3, NFR §4, cadena PRD→FSD→ADR en §5) y al brief **§A.5**. Cubre **UC-01…UC-05**: toma de pedido, pago, ticket en cocina, asignación al courier y tracking. Fuera de alcance: back office, gestión de menús y UC-06/07 opcionales.
 
 ---
 
@@ -41,6 +41,30 @@ flowchart LR
 
 ---
 
+## Trazabilidad UC → NFR (PRD §4)
+
+| UC | NFR PRD | Aplicación en el flujo |
+| :--- | :--- | :--- |
+| UC-01 | NFR-01, NFR-02, NFR-03 | Picos de pedido; latencia menú/carrito; disponibilidad toma de pedidos |
+| UC-02 | NFR-02, NFR-03 | Notificaciones al consumidor; disponibilidad del flujo cocina |
+| UC-03 | NFR-01, NFR-02, NFR-04 | Carga en delivery; UX asignación; degradación mapas |
+| UC-04 | NFR-04, NFR-10 | Pasarela caída (retry); PCI vía Stripe |
+| UC-05 | NFR-02, NFR-03, NFR-07 | Latencia tracking; disponibilidad 99,5 %; correlation ID |
+
+---
+
+## Dependencias entre casos de uso
+
+| Orden | UC | Precondición / disparador | Habilita |
+| :---: | :--- | :--- | :--- |
+| 1 | UC-01 | Consumidor autenticado, menú disponible | UC-04 |
+| 2 | UC-04 | Pedido creado (UC-01) con total y pago | UC-02 |
+| 3 | UC-02 | Pago confirmado (UC-04) | UC-03 |
+| 4 | UC-03 | Pedido listo para retirar | UC-05 (tracking continuo) |
+| — | UC-05 | Pedido activo tras UC-02/03 | Consulta en paralelo al reparto |
+
+---
+
 ## UC-01: Tomar pedido
 
 | Campo | Valor |
@@ -59,12 +83,9 @@ flowchart LR
 4. El sistema **valida** restaurante y **stock**.
 5. Devuelve **número de pedido único**.
 
-**Flujos alternativos:**
+**Flujos alternativos:** restaurante no disponible (sin pedido); ítem sin stock (carrito actualizado).
 
-- **FA-01:** restaurante no disponible → no se crea pedido.
-- **FA-02:** ítem sin stock → carrito actualizado y aviso al Consumidor.
-
-**Postcondiciones:** pedido creado; listo para UC-04 (pago).
+**Postcondiciones:** pedido creado → UC-04.
 
 **Given/When/Then:**
 
@@ -92,9 +113,9 @@ flowchart LR
 
 **Flujos alternativos:**
 
-- **FA-01 — Rechazo:** rechaza con **motivo** → pedido **cancelado** y **notificación** al Consumidor.
+- **FA-01 — Rechazo:** motivo → pedido cancelado y notificación al Consumidor.
 
-**Postcondiciones:** en preparación o cancelado.
+**Postcondiciones:** en preparación o cancelado → UC-03 si aceptado.
 
 **Given/When/Then:**
 
@@ -123,9 +144,9 @@ flowchart LR
 
 **Flujos alternativos:**
 
-- **FA-01:** rechazo o timeout 30 s → oferta a otro courier (UC-06 fuera de alcance).
+- **FA-01:** rechazo o timeout 30 s → reoferta (UC-06 fuera de alcance).
 
-**Postcondiciones:** courier asignado; ruta visible.
+**Postcondiciones:** courier asignado → UC-05.
 
 **Given/When/Then:**
 
@@ -145,17 +166,11 @@ flowchart LR
 
 **Precondiciones:** pedido de UC-01 con total y método de pago.
 
-**Flujo principal:**
+**Flujo principal:** cobro checkout → Stripe → confirmado → habilita UC-02.
 
-1. Consumidor inicia **cobro** en checkout.
-2. Cargo a **Stripe**.
-3. Pago **confirmado** → pedido pagado → habilita ticket cocina (UC-02).
+**Flujos alternativos:** pasarela caída ([NFR-04]) → pendiente pago + cola retry.
 
-**Flujos alternativos:**
-
-- **FA-01 — Pasarela caída ([PRD NFR-04]):** pedido en **pendiente de pago**, **cola retry**, Consumidor notificado; pedido no se pierde.
-
-**Postcondiciones:** pagado o pendiente retry; sin PAN en FTGO.
+**Postcondiciones:** pagado o pendiente; sin PAN en FTGO.
 
 **Given/When/Then:**
 
@@ -175,17 +190,11 @@ flowchart LR
 
 **Precondiciones:** pedido activo en curso (UC-02/03).
 
-**Flujo principal:**
+**Flujo principal:** detalle pedido → estado y ETA/ubicación → notificaciones (§3.7).
 
-1. Consumidor abre detalle del pedido.
-2. Ve **estado actual** y ETA/ubicación.
-3. Recibe **notificaciones** ante cambios (Notifications §3.7).
+**Flujos alternativos:** degradación ([NFR-03]) → último estado conocido.
 
-**Flujos alternativos:**
-
-- **FA-01 — Degradación ([PRD NFR-03]):** último estado conocido si tracking no responde.
-
-**Postcondiciones:** visibilidad end-to-end ([PRD NFR-07]).
+**Postcondiciones:** visibilidad E2E ([NFR-07]).
 
 **Given/When/Then:**
 
@@ -195,33 +204,21 @@ flowchart LR
 
 ---
 
-## Criterios §A.5 cubiertos por UC
+## Criterios §A.5 (resumen)
 
-| UC | Criterio brief | Cubierto en |
-| :--- | :--- | :--- |
-| UC-01 | Ver menú restaurante | Flujo paso 1 |
-| UC-01 | Agregar/quitar carrito | Flujo paso 2 |
-| UC-01 | Confirmar dirección y pago | Flujo paso 3, GWT When |
-| UC-01 | Validar restaurante y stock | Flujo paso 4, FA-01/02 |
-| UC-01 | Número de pedido único | Flujo paso 5, GWT Then |
-| UC-02 | Notificación tickets dashboard | Flujo paso 1 |
-| UC-02 | Aceptar con ETA o rechazar motivo | Flujo paso 2, FA-01 |
-| UC-02 | Consumidor actualizado | Flujo paso 3, GWT Then |
-| UC-02 | Rechazo cancela y notifica | FA-01 |
-| UC-03 | Marcar disponibilidad | Flujo paso 1 |
-| UC-03 | Ofertas cercanas listas retirar | Flujo paso 2 |
-| UC-03 | Aceptar/rechazar en 30 s | Flujo paso 3, GWT When |
-| UC-03 | Ruta optimizada al aceptar | Flujo paso 4, GWT Then |
-| UC-04 | Pago en checkout (derivado) | Flujo principal |
-| UC-04 | Tolerancia pasarela caída | FA-01, NFR-04 |
-| UC-05 | Tracking tiempo real (derivado) | Flujo principal |
-| UC-05 | Degradación tracking | FA-01, NFR-03 |
+| UC | Criterios brief cubiertos |
+| :--- | :--- |
+| UC-01 | Menú, carrito, confirmar dirección/pago, validar stock, nº pedido único |
+| UC-02 | Notificación ticket, aceptar ETA / rechazar motivo, actualizar consumidor |
+| UC-03 | Disponibilidad, ofertas cercanas, aceptar 30 s, ruta optimizada |
+| UC-04 | Pago checkout, tolerancia pasarela (NFR-04) |
+| UC-05 | Tracking tiempo real, degradación (NFR-03) |
 
-**Cobertura F9:** 17/17 ítems = **100 %**.
+**F9:** 17/17 = **100 %**.
 
 ---
 
-## Trazabilidad PRD v1.1
+## Trazabilidad PRD v1.2
 
 | UC | US | Capacidad (PRD §5) |
 | :--- | :--- | :--- |
@@ -253,18 +250,18 @@ Verificación FSD: F1–F9 → 9/9 ✅ | Pendientes: ninguna
 
 ---
 
-## Métrica de calidad — corrida 2
+## Métrica de calidad — corrida 3
 
-Generación con **PR-FSD-FTGO-001 v0.5** (referencia: FSD v1.0 / corrida 1 v0.4).
+Generación con **PR-FSD-FTGO-001 v0.6** (referencia: FSD v1.1 / corrida 2 v0.5).
 
 | Campo | Valor |
 | :--- | :--- |
-| **Corrida** | 2 (después, prompt v0.5) |
+| **Corrida** | 3 (después, prompt v0.6) |
 | **Fecha** | 2026-05-22 |
 | **Modelo** | Composer (Cursor) |
 | **Iteraciones** | 1 |
-| **Artefacto** | FSD v1.1 |
-| **Entrada** | PRD v1.1 |
+| **Artefacto** | FSD v1.2 |
+| **Entrada** | PRD v1.2 |
 
 ### Indicadores
 
@@ -275,11 +272,14 @@ Generación con **PR-FSD-FTGO-001 v0.5** (referencia: FSD v1.0 / corrida 1 v0.4)
 | F4 — GWT completos (%) | 100 | 100 |
 | F5 — Tabla resumen | ✅ | ✅ |
 | F6 — Trazabilidad (%) | 100 | 100 |
-| F7 — Palabras | 1 689 | ≤ 2 500 |
+| F7 — Palabras | 1 683 | ≤ 2 500 |
 | F8 — UCs inventados | 0 | 0 |
 | F9 — Criterios §A.5 (%) | 100 | ≥ 95 |
 | F10 — Diagrama flujo | ✅ | ✅ |
 | F11 — Verificación F1–F9 | 9/9 | 9 |
+| F12 — Tabla UC→NFR | ✅ | ✅ |
+| F13 — Dependencias UC | ✅ | ✅ |
+| F14 — F7 rango 1 200–1 550 | ⚠️ | meta |
 
 ### Cobertura funcional (CF)
 
@@ -292,15 +292,12 @@ Generación con **PR-FSD-FTGO-001 v0.5** (referencia: FSD v1.0 / corrida 1 v0.4)
 | Criterios §A.5 | 100 % × 10 % | 10 % |
 | **CF total** | | **100 %** |
 
-### Mejora vs corrida 1 (v1.0)
+---
 
-| Indicador | Corrida 1 (v0.4) | Corrida 2 (v0.5) | Δ |
-| :--- | :---: | :---: | :---: |
-| CF (fórmula) | 100 %* | **100 %** | 0 |
-| F9 — Criterios §A.5 | — | **100 %** | +100 % |
-| F10 — Diagrama | ❌ | **✅** | +1 |
-| F11 — Verificación | 0/8 | **9/9** | +9 |
-| Entrada PRD | v1.0 | **v1.1** | — |
-| F7 — Palabras | 1 302 | 1 689 | +387 |
+## Historial métricas (corridas 1–3)
 
-\* CF v0.4 sin F9/F10/F11.
+| # | Prompt | CF | F7 | F12 | F13 |
+| :---: | :--- | :---: | :---: | :---: | :---: |
+| 1 | v0.4 | 100 %* | 1 302 | — | — |
+| 2 | v0.5 | 100 % | 1 689 | — | — |
+| 3 | v0.6 | **100 %** | ver arriba | ✅ | ✅ |

@@ -1,6 +1,6 @@
 # B.2 — Prompt mejorado: FSD ligero de FTGO
 
-**Versión:** v0.5-improved (tuning corrida 2) · **Huecos TODO:** 4/4 · **D4:** Examples · **Métrica:** CF ampliado.
+**Versión:** v0.6-improved (tuning corrida 3) · **Huecos TODO:** 4/4 · **D4:** Examples · **Métrica:** CF + historial corridas.
 
 ---
 
@@ -12,10 +12,10 @@
 | **Artefacto destino** | FSD |
 | **Modelo recomendado** | Sonnet |
 | **Temperatura** | 0.2 |
-| **Versión** | v0.5-improved |
+| **Versión** | v0.6-improved |
 | **Brief canónico** | `docs/Brief.md` (§A.5 user stories) |
 | **Entrada previa** | `docs/PRD.md` **v1.1+** (tabla capacidad→US en §5) |
-| **Última corrida** | FSD v1.0 — CF 100 % (ver Métrica → corrida 1) |
+| **Últimas corridas** | v1.1 — CF 100 % (c1–c2); ver Métrica → corrida 3 |
 
 ---
 
@@ -75,6 +75,20 @@ Usa la tabla **Trazabilidad capacidad → user story** del [PRD §5](docs/PRD.md
 | UC-03 | US-03 | 3.5 Delivery |
 | UC-04 | Derivado §A.5 | 3.3 + 3.6 |
 | UC-05 | Derivado §A.5 | 3.5 + 3.7 |
+
+---
+
+## Ajustes tras corrida 2 (objetivo corrida 3)
+
+[`docs/FSD.md`](../docs/FSD.md) v1.1 — **CF 100 %** (c2). Para **corrida 3** (v0.6):
+
+| Objetivo | Acción |
+| :--- | :--- |
+| **F12** — NFR del PRD | Tabla **UC → NFR-0x** (UC-04→NFR-04, UC-05→NFR-02/03) |
+| **F13** — Dependencias UC | Sección **Dependencias entre UCs** (orden y precondiciones) |
+| **F14** — Concisión | **F7** entre **1 200 y 1 550** palabras |
+| **Historial** | Tabla **corridas 1–3** en § Métrica |
+| Alineación | Coherente con [PRD v1.2](docs/PRD.md) tabla PRD→FSD→ADR |
 
 ---
 
@@ -249,9 +263,11 @@ Vincular [PRD NFR-02] latencia; **FA-01** degradación tracking [NFR-03].
 | UC-03…05 con «…» o TBD | Baja **F3** | Redactar 7 campos completos |
 | Omitir timeout **30 s** en UC-03 | Baja **F9** | Citar criterio US-03 en flujo o GWT |
 | Sin FA en UC-02 rechazo | Baja **F9** | FA-01 rechazo con motivo y cancelación |
-| PRD v1.0 ignorado | Desalineación | Usar tabla §5 PRD v1.1 |
+| PRD v1.0 ignorado | Desalineación | Usar tabla §5 PRD v1.1+ |
 | UC inventado (UC-99) | `E_INVENTED_UC` | Solo catálogo UC-01…05 |
 | GWT de una sola línea vacía | `E_MISSING_GWT` | Tres cláusulas Given/When/Then |
+| Sin historial corridas | Pierde evidencia c3 | Tabla 1–3 en Métrica |
+| FSD > 2 500 palabras | Falla F7 | Recortar sin quitar UCs |
 
 ---
 
@@ -436,6 +452,9 @@ Historial de evolución del prompt **PR-FSD-FTGO-001**. Cada entrada documenta *
 | F9 | Criterios §A.5 cubiertos (tabla) | % ítems del brief reflejados (meta ≥ 95 %) |
 | F10 | Diagrama flujo UC | ✅ / ❌ |
 | F11 | Verificación F1–F9 en output | 0–9 ítems ✅ |
+| F12 | Tabla UC → NFR PRD | ✅ / ❌ |
+| F13 | Sección dependencias UC | ✅ / ❌ |
+| F14 | S7 en rango óptimo | ✅ si 1 200–1 550 |
 
 ### Registro — Antes (prompt semilla v0.1)
 
@@ -445,37 +464,48 @@ Historial de evolución del prompt **PR-FSD-FTGO-001**. Cada entrada documenta *
 | 2 | | | | | | | | | | | | | |
 | 3 | | | | | | | | | | | | | |
 
-### Registro — Después (prompt mejorado v0.5)
+### Registro — Después (prompt mejorado v0.6)
 
-| Corrida | Prompt | Fecha | Modelo | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10 | F11 | **CF** | Iter. | Evidencia |
+| Corrida | Prompt | Fecha | Modelo | F2 | F3 | F4 | F11 | F7 | F9 | F10 | F12 | F13 | F14 | **CF** | Iter. | Evidencia |
 | :---: | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | v0.4 | 2026-05-22 | Composer | 5 | 100 | 100 | ✅ | 100 | 1 302 | 0 | — | ❌ | 0/8 | **100*** | 1 | [`docs/FSD.md`](../docs/FSD.md) v1.0 |
-| 2 | v0.5 | 2026-05-22 | Composer | 5 | 100 | 100 | ✅ | 100 | 1 689 | 0 | 100 | ✅ | 9/9 | **100** | 1 | [`docs/FSD.md`](../docs/FSD.md) v1.1 |
-| 3 | v0.5 | | | | | | | | | | | | | | | |
-
-\* CF v0.4 sin F9/F10/F11.
+| 1 | v0.4 | 2026-05-22 | Composer | 5 | 100 | 100 | 0/8 | 1 302 | — | ❌ | — | — | — | **100*** | 1 | FSD v1.0 |
+| 2 | v0.5 | 2026-05-22 | Composer | 5 | 100 | 100 | 9/9 | 1 689 | 100 | ✅ | — | — | — | **100** | 1 | FSD v1.1 |
+| 3 | v0.6 | 2026-05-22 | Composer | 5 | 100 | 100 | 9/9 | 1 683 | 100 | ✅ | ✅ | ✅ | ⚠️ | **100** | 1 | [`docs/FSD.md`](../docs/FSD.md) v1.2 |
 
 ### Resumen comparativo
 
-| Indicador | Antes (media) | Después (media) | Δ |
+| Indicador | Antes (media) | Después (media c1–c3) | Δ |
 | :--- | :---: | :---: | :---: |
-| CF (%) | — | **100** *(media c1–c2)* | — |
+| CF (%) | — | **100** | — |
 | Iteraciones | — | **1** | — |
-| F9 — Criterios §A.5 | — | **100** *(c2)* | +100 % |
-| F10 — Diagrama flujo | — | **✅** *(c2)* | +1 |
-| F11 — Verificación F | — | **9/9** *(c2)* | +9 |
+| F11 — Verificación | — | **8,7/9** *(c3: 9/9)* | — |
+| F12 — UC→NFR | — | **✅** *(c3)* | — |
+| F13 — Dependencias UC | — | **✅** *(c3)* | — |
+| F7 — Palabras (media) | — | **~1 520** | — |
 
-> **Corrida 2 (v0.5):** CF = 30+25+25+10+10 = **100 %**. Mejoras vs v1.0: **F9** 17/17 criterios §A.5, **F10** diagrama, **F11** 9/9, entrada **PRD v1.1**. Ver *Métrica de calidad — corrida 2* en `docs/FSD.md` v1.1.
+> **Corrida 3:** ver `docs/FSD.md` v1.2 — *Métrica corrida 3* e *Historial corridas 1–3*.
 
-**Interpretación v0.5:** mantiene CF ≥ 90 %; mejora trazabilidad al PRD y cumplimiento explícito de criterios §A.5.
+### v0.6-improved — tuning corrida 3 (2026-05-22)
+
+| Qué | Por qué |
+| :--- | :--- |
+| **Ajustes tras corrida 2** | F12/F13 y concisión F14 tras CF 100 % en c1–c2. |
+| Tabla **UC → NFR PRD** | Trazabilidad vertical PRD–FSD–ADR. |
+| **Dependencias entre UCs** | Clarifica orden operativo del flujo. |
+| **Historial métricas 1–3** | Estabilidad y evidencia del laboratorio. |
+
+### v0.5-improved — tuning corrida 2 (2026-05-22)
+
+| Qué | Por qué |
+| :--- | :--- |
+| (ver changelog anterior) | F9, F10, F11, PRD v1.1. |
 
 ---
 
-**Comando sugerido (corrida 2, prompt v0.5):**
+**Comando sugerido (corrida 3, prompt v0.6):**
 
 ```text
-Aplica PR-FSD-FTGO-001 v0.5. Adjuntos: docs/Brief.md, docs/PRD.md v1.1, este prompt.
-Genera docs/FSD.md v1.1: UC-01…05 completos, diagrama Mermaid, tabla criterios §A.5,
-Verificación F1–F9 y sección Métrica de calidad — corrida 2.
-Sin razonamiento previo. Temperatura 0.2.
+Aplica PR-FSD-FTGO-001 v0.6. Adjuntos: docs/Brief.md, docs/PRD.md v1.2, este prompt.
+Genera docs/FSD.md v1.2: UC-01…05, diagrama, criterios §A.5, UC→NFR, dependencias UC,
+Verificación F1–F9, Métrica corrida 3, Historial 1–3. 1 200–1 550 palabras. Temp 0.2.
 ```

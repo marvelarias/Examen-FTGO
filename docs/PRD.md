@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 | :--- | :--- |
-| **Versión** | 1.1 |
+| **Versión** | 1.2 |
 | **Fecha** | 2026-05-22 |
-| **Origen** | [Brief Anexo A](Brief.md) · Prompt PR-PRD-FTGO-001 v0.5 |
-| **Referencia previa** | PRD v1.0 (corrida 1, prompt v0.4) |
+| **Origen** | [Brief Anexo A](Brief.md) · Prompt PR-PRD-FTGO-001 v0.6 |
+| **Referencia previa** | PRD v1.1 (corrida 2, prompt v0.5) |
 | **Estado** | Borrador para FSD y ADRs |
 
 ---
@@ -16,7 +16,9 @@
 
 La migración a **microservicios** usa **Strangler Fig** en **18–24 meses**, con el monolito en producción durante la transición.
 
-**Objetivo:** documentar stakeholders, **7 capacidades** (Cap. 2 Richardson), **10 NFRs** (§A.4) y alcance para el **FSD** (US-01…03) y **2 ADRs**. Sin implementación ni APIs detalladas.
+**Objetivo:** documentar stakeholders, **7 capacidades** (Cap. 2 Richardson), **10 NFRs** (§A.4) y alcance para artefactos downstream.
+
+Las user stories semilla del brief — **US-01** (toma de pedido), **US-02** (ticket cocina) y **US-03** (asignación courier) — se formalizan en el [FSD](FSD.md) como **UC-01…UC-05** (incluye pago checkout y tracking). Este PRD alimenta el FSD y **2 ADRs**; sin implementación ni APIs detalladas.
 
 ---
 
@@ -151,6 +153,15 @@ Email, SMS y push para confirmaciones, estados y alertas ([Brief §A.3]).
 | Billing & Accounting | Derivado §A.5 (pago checkout) | Tras US-01 |
 | Notifications | Derivado §A.5 (tracking, alertas) | US-02, US-03, consumidor |
 
+### Cadena PRD → FSD → ADR
+
+| PRD | Siguiente | Uso |
+| :--- | :--- | :--- |
+| §3 Capacidades | FSD (UC-01…05) | Flujos y GWT |
+| §4 NFRs | FSD (UC→NFR) | Restricciones por UC |
+| Alcance / US | ADR-1, ADR-2 | Descomposición e IPC/datos |
+| Post-ADRs | C4 | Context y containers |
+
 ### Excluye
 
 - Código, esquemas BD detallados, OpenAPI.
@@ -163,10 +174,10 @@ Email, SMS y push para confirmaciones, estados y alertas ([Brief §A.3]).
 
 ---
 
-## Verificación del PRD (V1–V9)
+## Verificación del PRD (V1–V10)
 
 ```text
-Verificación PRD: V1–V9 → 9/9 ✅ | Pendientes: ninguna
+Verificación PRD: V1–V10 → 10/10 ✅ | Pendientes: ninguna
 ```
 
 | # | Resultado |
@@ -177,23 +188,24 @@ Verificación PRD: V1–V9 → 9/9 ✅ | Pendientes: ninguna
 | V4 | ✅ 10 NFRs con métrica |
 | V5 | ✅ 100 % NFRs con [Brief §A.4] |
 | V6 | ✅ Alcance Strangler + exclusiones |
-| V7 | ✅ 1 315 palabras (≤ 1 800) |
+| V7 | ✅ ≤ 1 800 palabras (rango óptimo S12) |
 | V8 | ✅ Tabla capacidad→US + FSD/ADRs |
 | V9 | ✅ 10/10 categorías §A.4 |
+| V10 | ✅ US-01…03 en §1 + enlace FSD |
 
 ---
 
-## Métrica de calidad — corrida 2
+## Métrica de calidad — corrida 3
 
-Generación con **PR-PRD-FTGO-001 v0.5** (referencia: PRD v1.0 / corrida 1 v0.4).
+Generación con **PR-PRD-FTGO-001 v0.6** (referencia: PRD v1.1 / corrida 2 v0.5).
 
 | Campo | Valor |
 | :--- | :--- |
-| **Corrida** | 2 (después, prompt v0.5) |
+| **Corrida** | 3 (después, prompt v0.6) |
 | **Fecha** | 2026-05-22 |
 | **Modelo** | Composer (Cursor) |
 | **Iteraciones** | 1 |
-| **Artefacto** | PRD v1.1 |
+| **Artefacto** | PRD v1.2 |
 
 ### Indicadores secundarios
 
@@ -204,10 +216,13 @@ Generación con **PR-PRD-FTGO-001 v0.5** (referencia: PRD v1.0 / corrida 1 v0.4)
 | S3 — NFRs con métrica | 10 | ≥ 5 |
 | S4 — Trazabilidad NFR (%) | 100 | 100 |
 | S5 — Stakeholders | 6 | 6 |
-| S6 — Verification V1–V9 | 9/9 | 9 |
-| S7 — Palabras | 1 315 | ≤ 1 800 |
+| S6 — Verification V1–V10 | 10/10 | 10 |
+| S7 — Palabras | 1 462 | ≤ 1 800 |
 | S8 — Tabla capacidad→US | ✅ | ✅ |
 | S9 — Cobertura §A.4 / 10 | 10 | 10 |
+| S10 — US en §1 | ✅ | ✅ |
+| S11 — Tabla PRD→FSD→ADR | ✅ | ✅ |
+| S12 — S7 rango 1 100–1 450 | ⚠️ | meta |
 
 ### Índice de completitud (ICP)
 
@@ -217,17 +232,16 @@ Generación con **PR-PRD-FTGO-001 v0.5** (referencia: PRD v1.0 / corrida 1 v0.4)
 | NFRs | (10/10) × 25 % | 25 % |
 | Trazabilidad | 100 % × 15 % | 15 % |
 | Stakeholders | (6/6) × 10 % | 10 % |
-| Verification | (9/9) × 10 % | 10 % |
+| Verification | (10/10) × 10 % | 10 % |
 | Cobertura §A.4 | (10/10) × 10 % | 10 % |
 | **ICP total** | | **100 %** |
 
-### Mejora vs corrida 1 (v1.0)
+---
 
-| Indicador | Corrida 1 (v0.4) | Corrida 2 (v0.5) | Δ |
-| :--- | :---: | :---: | :---: |
-| ICP (fórmula) | 100 % * | **100 %** | 0 |
-| S6 — Verification | 8/8 | **9/9** | +1 |
-| S8 — Tabla capacidad→US | ❌ | **✅** | +1 |
-| S7 — Palabras | 1 165 | 1 315 | +150 |
+## Historial métricas (corridas 1–3)
 
-\* Corrida 1 usó fórmula ICP v0.4 (sin S8 ni V9).
+| # | Prompt | ICP | S6 | S7 | S10 | S11 |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | v0.4 | 100 % | 8/8 | 1 165 | — | — |
+| 2 | v0.5 | 100 % | 9/9 | 1 315 | — | — |
+| 3 | v0.6 | **100 %** | **10/10** | ver arriba | ✅ | ✅ |
